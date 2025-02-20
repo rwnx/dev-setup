@@ -14,7 +14,11 @@ fi
 # Install pipx via Homebrew
 echo "Installing pipx..."
 brew install pipx
+# Modify zshrc
 pipx ensurepath
+
+# add pipx paths just for this script
+export PATH="$PATH:$HOME/.local/bin"
 
 # Install Ansible via pipx
 echo "Installing Ansible..."
