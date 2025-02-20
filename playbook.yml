@@ -7,10 +7,14 @@
     config_dir: "~/.config"
 
   tasks:
-    - name: Ensure Homebrew environment is loaded
-      shell: |
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-      changed_when: false
+    - name: Configure shell environment
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zshrc"
+        line: "{{ item }}"
+        state: present
+      with_items:
+        - 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+        - 'export PATH="$PATH:$HOME/.local/bin"'
 
     - name: Install Homebrew casks
       community.general.homebrew_cask:
@@ -55,7 +59,7 @@
           POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir vcs)
           POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status time)
 
-    - name: Update zshrc
+    - name: Update zshrc with theme configuration
       lineinfile:
         path: "{{ ansible_env.HOME }}/.zshrc"
         line: "{{ item }}"
@@ -64,12 +68,9 @@
         - 'ZSH_THEME="powerlevel10k/powerlevel10k"'
         - 'source ~/.p10k.zsh'
 
-    - name: Test final setup by opening new Ghostty window
+    - name: Test final setup by launching Ghostty
       shell: |
         mkdir -p artifacts
-        # Open a new Ghostty window
         open -a Ghostty
-        # Wait for window to appear and shell to load
         sleep 5
-        # Capture screenshot
         screencapture -x artifacts/setup_result.png

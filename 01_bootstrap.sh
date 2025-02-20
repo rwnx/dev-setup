@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 set -euo pipefail
 
 echo "Bootstrapping development environment setup..."
@@ -8,6 +8,7 @@ if ! command -v brew &> /dev/null; then
     echo "Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     eval "$(/opt/homebrew/bin/brew shellenv)"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
 fi
 
 # Install pipx via Homebrew
@@ -19,4 +20,5 @@ pipx ensurepath
 echo "Installing Ansible..."
 pipx install ansible
 
-echo "Bootstrap complete! You can now run: ansible-playbook playbook.yml"
+echo "Running Ansible playbook..."
+ansible-playbook playbook.yml

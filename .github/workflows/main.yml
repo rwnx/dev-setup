@@ -8,17 +8,13 @@ on:
 jobs:
   test-setup:
     runs-on: macos-latest
+    defaults:
+      run:
+        shell: zsh {0}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Make bootstrap script executable
-        run: chmod +x ./bootstrap.sh
-
-      - name: Run bootstrap
-        run: ./bootstrap.sh
-
-      - name: Run Ansible playbook
-        run: ansible-playbook playbook.yml
+      - run: ./01_bootstrap.sh
 
       - name: Upload verification artifacts
         uses: actions/upload-artifact@v4
