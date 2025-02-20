@@ -1,0 +1,75 @@
+---
+- name: Setup Development Environment
+  hosts: localhost
+  become: no
+
+  vars:
+    config_dir: "~/.config"
+
+  tasks:
+    - name: Ensure Homebrew environment is loaded
+      shell: |
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      changed_when: false
+
+    - name: Install Homebrew casks
+      community.general.homebrew_cask:
+        name:
+          - ghostty
+          - font-meslo-lg-nerd-font
+        state: present
+
+    - name: Install Oh My Zsh
+      shell: |
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      args:
+        creates: ~/.oh-my-zsh
+
+    - name: Install Powerlevel10k
+      git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/themes/powerlevel10k"
+        depth: 1
+
+    - name: Create config directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ config_dir }}/ghostty"
+
+    - name: Configure Ghostty
+      copy:
+        dest: "{{ config_dir }}/ghostty/config"
+        content: |
+          font-family = "MesloLGS NF"
+          font-size = 14
+          theme = "tokyo-night"
+
+    - name: Configure p10k
+      copy:
+        dest: "{{ ansible_env.HOME }}/.p10k.zsh"
+        content: |
+          POWERLEVEL9K_DISABLE_CONFIGURATION_WIZARD=true
+          POWERLEVEL9K_MODE='nerdfont-complete'
+          POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir vcs)
+          POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status time)
+
+    - name: Update zshrc
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zshrc"
+        line: "{{ item }}"
+        state: present
+      with_items:
+        - 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+        - 'source ~/.p10k.zsh'
+
+    - name: Test final setup by opening new Ghostty window
+      shell: |
+        mkdir -p artifacts
+        # Open a new Ghostty window
+        open -a Ghostty
+        # Wait for window to appear and shell to load
+        sleep 5
+        # Capture screenshot
+        screencapture -x artifacts/setup_result.png

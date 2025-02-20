@@ -1,0 +1,28 @@
+name: Test Dev Environment Setup
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-setup:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make bootstrap script executable
+        run: chmod +x ./bootstrap.sh
+
+      - name: Run bootstrap
+        run: ./bootstrap.sh
+
+      - name: Run Ansible playbook
+        run: ansible-playbook playbook.yml
+
+      - name: Upload verification artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-verification
+          path: artifacts/
+          retention-days: 5
